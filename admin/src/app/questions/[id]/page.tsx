@@ -8,7 +8,7 @@ import { TYPE_LABELS, DIFFICULTY_LABELS, type QuestionRow } from '@/lib/question
 import type { Placement } from '@/lib/media';
 import { saveQuestion } from '../actions';
 
-type MediaRow = MediaDefaults & { placement: Placement };
+type MediaRow = MediaDefaults & { placement: Placement; broken_at: string | null; check_error: string | null };
 
 function QuestionSummary({ q }: { q: QuestionRow }) {
   return (
@@ -63,7 +63,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
 
   const [{ data: q }, { data: media }, { data: categories }, { data: profile }] = await Promise.all([
     supabase.from('questions').select('*').eq('id', id).maybeSingle<QuestionRow>(),
-    supabase.from('question_media').select('placement, kind, url, start_seconds, end_seconds, alt_text').eq('question_id', id).returns<MediaRow[]>(),
+    supabase.from('question_media').select('placement, kind, url, start_seconds, end_seconds, alt_text, broken_at, check_error').eq('question_id', id).returns<MediaRow[]>(),
     supabase.from('categories').select('id, name_ar').order('id'),
     supabase.from('profiles').select('role').eq('id', user.id).single<{ role: Role }>(),
   ]);
@@ -72,7 +72,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
   const role: Role = profile?.role ?? 'writer';
   const status = q.status as QuestionStatus;
   const isAuthor = q.author_id === user.id;
-  const pick = (p: Placement): MediaDefaults | null => (media ?? []).find((m) => m.placement === p) ?? null;
+  const pick = (p: Placement): MediaRow | null => (media ?? []).find((m) => m.placement === p) ?? null;
   const placements: Placement[] = ['question', 'answer'];
 
   return (
@@ -94,6 +94,11 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
             <div key={p} className="space-y-1">
               <h2 className="text-sm font-medium">{p === 'question' ? 'وسيط السؤال' : 'شرح الإجابة'}</h2>
               <MediaPreview kind={m.kind} url={m.url} start={m.start_seconds} end={m.end_seconds} alt={m.alt_text} />
+              {m.broken_at && (
+                <p className="text-sm text-red-700">
+                  الرابط معطل منذ {new Date(m.broken_at).toLocaleDateString('ar')}: {m.check_error}
+                </p>
+              )}
             </div>
           ) : null;
         })}
