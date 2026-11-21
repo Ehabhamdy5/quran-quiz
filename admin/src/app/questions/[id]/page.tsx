@@ -87,6 +87,15 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
         <p className="rounded border border-amber-300 bg-amber-50 p-3">ملاحظات المراجع: {q.review_notes}</p>
       )}
 
+      {q.source_excerpt && (
+        <figure className="rounded border border-emerald-200 bg-emerald-50 p-3">
+          <figcaption className="mb-1 text-sm font-medium text-emerald-900">
+            الاقتباس الذي بُني عليه السؤال: {q.source_book}، {q.source_page}
+          </figcaption>
+          <blockquote className="text-gray-900">«{q.source_excerpt}»</blockquote>
+        </figure>
+      )}
+
       <section className="grid gap-4 sm:grid-cols-2">
         {placements.map((p) => {
           const m = pick(p);
@@ -104,7 +113,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
         })}
       </section>
 
-      <TransitionPanel id={id} targets={availableTransitions(status, role, isAuthor)} />
+      <TransitionPanel id={id} targets={availableTransitions(status, role, isAuthor)} generated={q.origin === 'ai'} />
 
       {canEdit(status, role, isAuthor) ? (
         <QuestionForm

@@ -34,6 +34,7 @@ export type QuestionRow = {
   status: string;
   author_id: string;
   review_notes: string | null;
+  source_excerpt: string | null;
 };
 
 export const questionSchema = z
