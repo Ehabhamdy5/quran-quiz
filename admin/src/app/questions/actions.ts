@@ -69,3 +69,15 @@ export async function transitionQuestion(id: string, _prev: FormState, fd: FormD
   revalidatePath(`/questions/${id}`);
   return null;
 }
+
+export async function resolveReport(questionId: string, reportId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  await supabase
+    .from('question_reports')
+    .update({ resolved_at: new Date().toISOString(), resolved_by: user?.id })
+    .eq('id', reportId);
+  revalidatePath(`/questions/${questionId}`);
+}

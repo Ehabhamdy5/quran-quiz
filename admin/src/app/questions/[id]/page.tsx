@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { QuestionForm, type MediaDefaults } from '@/components/QuestionForm';
 import { MediaPreview } from '@/components/MediaPreview';
 import { TransitionPanel } from '@/components/TransitionPanel';
+import { QuestionInsights } from '@/components/QuestionInsights';
 import { STATUS_LABELS, availableTransitions, canEdit, type QuestionStatus, type Role } from '@/lib/status';
 import { TYPE_LABELS, DIFFICULTY_LABELS, type QuestionRow } from '@/lib/question-schema';
 import type { Placement } from '@/lib/media';
@@ -112,6 +113,8 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
           ) : null;
         })}
       </section>
+
+      <QuestionInsights id={id} canResolve={role === 'reviewer' || role === 'admin'} />
 
       <TransitionPanel id={id} targets={availableTransitions(status, role, isAuthor)} generated={q.origin === 'ai'} />
 

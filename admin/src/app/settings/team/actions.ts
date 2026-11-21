@@ -33,6 +33,7 @@ export async function createMember(_prev: TeamState, fd: FormData): Promise<Team
     password,
     email_confirm: true,
     user_metadata: { display_name: displayName },
+    app_metadata: { staff: true },
   });
   if (error) return { errors: [error.code === 'email_exists' ? 'هذا البريد مسجَّل من قبل' : error.message] };
 

@@ -10,6 +10,12 @@ export async function login(_prev: string | null, fd: FormData): Promise<string 
     password: String(fd.get('password') ?? ''),
   });
   if (error) return 'البريد أو كلمة المرور غير صحيحة';
+  // حسابات اللاعبين تسجّل الدخول في التطبيق، لا في لوحة الفريق.
+  const { data: role } = await supabase.rpc('my_role');
+  if (!role) {
+    await supabase.auth.signOut();
+    return 'هذا الحساب ليس من فريق المحتوى';
+  }
   redirect('/questions');
 }
 

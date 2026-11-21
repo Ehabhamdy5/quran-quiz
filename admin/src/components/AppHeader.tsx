@@ -22,6 +22,9 @@ export async function AppHeader() {
       <Link href="/questions?broken=1" className="text-sm text-red-800 hover:underline">
         تحتاج إصلاحًا
       </Link>
+      <Link href="/questions?reported=1" className="text-sm text-amber-800 hover:underline">
+        عليها بلاغات
+      </Link>
       {role === 'admin' && (
         <>
           <span className="text-gray-300">|</span>

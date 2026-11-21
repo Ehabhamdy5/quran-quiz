@@ -16,27 +16,34 @@ type ListRow = {
 export default async function QuestionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; broken?: string }>;
+  searchParams: Promise<{ status?: string; broken?: string; reported?: string }>;
 }) {
-  const { status, broken } = await searchParams;
+  const { status, broken, reported } = await searchParams;
   const onlyBroken = broken === '1';
+  const onlyReported = reported === '1';
   const supabase = await createClient();
 
   let query = supabase
     .from('questions')
     .select(
-      `id, prompt, status, difficulty, origin, categories(name_ar), ${onlyBroken ? 'question_media!inner(broken_at)' : 'question_media(broken_at)'}`,
+      `id, prompt, status, difficulty, origin, categories(name_ar), ${onlyBroken ? 'question_media!inner(broken_at)' : 'question_media(broken_at)'}${onlyReported ? ', question_reports!inner(resolved_at)' : ''}`,
     )
     .order('updated_at', { ascending: false })
     .limit(200);
   if (status && isQuestionStatus(status)) query = query.eq('status', status);
   if (onlyBroken) query = query.not('question_media.broken_at', 'is', null);
+  if (onlyReported) query = query.is('question_reports.resolved_at', null);
 
   const { data, error } = await query.returns<ListRow[]>();
   if (error) return <p className="text-red-700">{error.message}</p>;
 
   return (
     <div className="space-y-3">
+      {onlyReported && (
+        <p className="rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          أسئلة عليها بلاغات من اللاعبين لم تُعالج بعد. يُوقف السؤال المنشور آليًا عند ثلاثة بلاغات.
+        </p>
+      )}
       {onlyBroken && (
         <p className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-900">
           أسئلة فيها رابط وسيط معطل. ما كان منها منشورًا أُوقف آليًا: أصلح الرابط ثم أرسل السؤال للمراجعة.
