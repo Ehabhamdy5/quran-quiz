@@ -33,7 +33,10 @@ export async function AppHeader() {
           </Link>
         </>
       )}
-      <Link href="/questions/new" className="ms-auto rounded bg-emerald-700 px-3 py-1.5 text-white">
+      <Link href="/questions/generate" className="ms-auto text-sm text-emerald-800 hover:underline">
+        توليد مساعَد
+      </Link>
+      <Link href="/questions/new" className="rounded bg-emerald-700 px-3 py-1.5 text-white">
         سؤال جديد
       </Link>
       <form action={signOut}>
