@@ -1,0 +1,30 @@
+name: import-drafts
+
+# يستورد ملفات content/drafts إلى القاعدة الحقيقية بعد فحصها على نص التفسير. يُشغَّل يدويًا.
+on:
+  workflow_dispatch:
+    inputs:
+      author_email:
+        description: بريد الكاتب الذي تُنسب إليه المسودات
+        required: true
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      TAFSIR_MCP_URL: https://mcp.tafsir.net/mcp
+      DRAFT_AUTHOR_EMAIL: ${{ inputs.author_email }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+      - run: npm ci
+      - run: npm run import-drafts -- ../content/drafts/*.json

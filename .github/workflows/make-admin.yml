@@ -1,0 +1,29 @@
+name: make-admin
+
+# يجعل حسابًا موجودًا مديرًا (أنشئ الحساب أولًا من لوحة Supabase: Authentication > Add user).
+on:
+  workflow_dispatch:
+    inputs:
+      email:
+        description: البريد الإلكتروني للحساب
+        required: true
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      ADMIN_EMAIL: ${{ inputs.email }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+      - run: npm ci
+      - run: npm run bootstrap-admin
