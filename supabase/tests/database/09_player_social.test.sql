@@ -1,5 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
+-- عزل الاختبار عن أي أسئلة في القاعدة المحلية (يُتراجع عنه في آخره).
+delete from public.questions;
 select plan(12);
 
 insert into auth.users (id, email, raw_app_meta_data) values

@@ -1,5 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
+-- عزل الاختبار عن أي أسئلة في القاعدة المحلية (يُتراجع عنه في آخره).
+delete from public.questions;
 select plan(17);
 
 -- كاتب من الفريق، ولاعب مجهول.
@@ -17,6 +19,11 @@ values ('10000000-0000-0000-0000-000000000009', 'سؤال متوسط', 'true_fal
 select set_config('app.in_transition', 'on', true);
 update public.questions set status = 'published';
 select set_config('app.in_transition', 'off', true);
+
+-- رقم الخيار الصحيح «أ» كما ظهر للاعب بعد الخلط.
+create function pg_temp.right_choice(shown jsonb) returns jsonb language sql as $$
+  select to_jsonb(ord - 1) from jsonb_array_elements_text(shown -> 'options') with ordinality t(v, ord) where v = 'أ'
+$$;
 
 select is((select count(*)::int from public.profiles where id = '00000000-0000-0000-0000-0000000000f1'), 0,
   'a self-registered player gets no staff profile');
@@ -36,16 +43,17 @@ select throws_ok($$ select public.show_question((select id from r1), 2::smallint
   'questions come in order');
 select throws_ok($$ select public.answer_question((select id from r1), 1::smallint, '0') $$, 'P0001', 'لم يُعرض هذا السؤال بعد',
   'no answer before the question is shown');
-select ok(not (public.show_question((select id from r1), 1::smallint) ? 'correct_answer'), 'the answer is not sent with the question');
+create temp table s1 as select public.show_question((select id from r1), 1::smallint) as j;
+select ok(not ((select j from s1) ? 'correct_answer'), 'the answer is not sent with the question');
 
 -- الإجابة فورية داخل المعاملة: 10 + مكافأة السرعة كاملة 5.
-select is((public.answer_question((select id from r1), 1::smallint, '0') ->> 'points')::int, 15, 'a fast correct answer scores 15');
+select is((public.answer_question((select id from r1), 1::smallint, pg_temp.right_choice((select j from s1))) ->> 'points')::int, 15,
+  'a fast correct answer scores 15');
 select throws_ok($$ select public.answer_question((select id from r1), 1::smallint, '0') $$, 'P0001', 'أُجيب عن هذا السؤال من قبل',
   'one answer per question');
-select public.show_question((select id from r1), 2::smallint);
-select public.answer_question((select id from r1), 2::smallint, '0');
-select public.show_question((select id from r1), 3::smallint);
-select is((public.answer_question((select id from r1), 3::smallint, '0') ->> 'points')::int, 20, 'the third correct in a row adds the streak bonus');
+select public.answer_question((select id from r1), 2::smallint, pg_temp.right_choice(public.show_question((select id from r1), 2::smallint)));
+select is((public.answer_question((select id from r1), 3::smallint, pg_temp.right_choice(public.show_question((select id from r1), 3::smallint)))
+  ->> 'points')::int, 20, 'the third correct in a row adds the streak bonus');
 
 -- سؤال تأخر جوابه 30 ثانية.
 select public.show_question((select id from r1), 4::smallint);
@@ -67,7 +75,7 @@ insert into public.rounds (player_id, level, question_count, score, correct_coun
 set local role authenticated;
 set local request.jwt.claims to '{"sub":"00000000-0000-0000-0000-0000000000f1","role":"authenticated"}';
 create temp table r2 as select (public.start_round(null) ->> 'round_id')::uuid as id;
-select public.show_question((select id from r2), i::smallint), public.answer_question((select id from r2), i::smallint, '0')
+select public.answer_question((select id from r2), i::smallint, pg_temp.right_choice(public.show_question((select id from r2), i::smallint)))
 from generate_series(1, 4) i;
 select is(public.finish_round((select id from r2)) ->> 'promoted_to', 'intermediate', 'three strong rounds promote the player');
 
