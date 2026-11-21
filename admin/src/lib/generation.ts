@@ -28,7 +28,7 @@ export interface TafsirSource {
 
 export type Prompt = { system: string; user: string };
 
-const requestSchema = z
+export const requestSchema = z
   .object({
     surah: z.number({ invalid_type_error: 'اختر السورة' }).int().min(1, 'رقم السورة بين 1 و114').max(114, 'رقم السورة بين 1 و114'),
     fromAyah: z.number({ invalid_type_error: 'حدّد أول آية' }).int().min(1, 'رقم الآية يبدأ من 1'),
