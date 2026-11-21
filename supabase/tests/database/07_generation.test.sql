@@ -2,7 +2,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(4);
 
-insert into auth.users (id, email) values ('00000000-0000-0000-0000-00000000000a', 'writer@test.local');
+insert into auth.users (id, email, raw_app_meta_data) values ('00000000-0000-0000-0000-00000000000a', 'writer@test.local', '{"staff":true}');
 
 set local role authenticated;
 set local request.jwt.claims to '{"sub":"00000000-0000-0000-0000-00000000000a","role":"authenticated"}';

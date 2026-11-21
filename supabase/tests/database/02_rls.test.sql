@@ -2,10 +2,10 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(6);
 
-insert into auth.users (id, email) values
-  ('00000000-0000-0000-0000-00000000000a', 'writer@test.local'),
-  ('00000000-0000-0000-0000-00000000000b', 'reviewer@test.local'),
-  ('00000000-0000-0000-0000-00000000000c', 'admin@test.local');
+insert into auth.users (id, email, raw_app_meta_data) values
+  ('00000000-0000-0000-0000-00000000000a', 'writer@test.local', '{"staff":true}'),
+  ('00000000-0000-0000-0000-00000000000b', 'reviewer@test.local', '{"staff":true}'),
+  ('00000000-0000-0000-0000-00000000000c', 'admin@test.local', '{"staff":true}');
 update public.profiles set role = 'reviewer' where id = '00000000-0000-0000-0000-00000000000b';
 update public.profiles set role = 'admin' where id = '00000000-0000-0000-0000-00000000000c';
 

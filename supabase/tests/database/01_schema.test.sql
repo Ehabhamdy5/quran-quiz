@@ -6,7 +6,7 @@ select has_table('public', 'questions', 'questions table exists');
 select has_table('public', 'question_media', 'question_media table exists');
 select is((select count(*)::int from public.categories), 4, 'four categories are seeded');
 
-insert into auth.users (id, email) values ('00000000-0000-0000-0000-0000000000a1', 'new@test.local');
+insert into auth.users (id, email, raw_app_meta_data) values ('00000000-0000-0000-0000-0000000000a1', 'new@test.local', '{"staff":true}');
 select is(
   (select role::text from public.profiles where id = '00000000-0000-0000-0000-0000000000a1'),
   'writer',
