@@ -17,5 +17,7 @@ export const MIN_QUOTE_LENGTH = 10;
 export function containsQuote(source: string, quote: string): boolean {
   const q = normalizeArabic(quote);
   if (q.length < MIN_QUOTE_LENGTH) return false;
-  return ` ${normalizeArabic(source)} `.includes(` ${q} `);
+  // فروق النسخ بين ¬ و¥ ليست من كلام المؤلف المتصل، فلا تقطع الاقتباس.
+  const text = source.replace(/¬[^¥]*¥/g, ' ');
+  return ` ${normalizeArabic(text)} `.includes(` ${q} `);
 }

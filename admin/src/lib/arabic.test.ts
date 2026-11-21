@@ -19,6 +19,11 @@ describe('containsQuote', () => {
     expect(containsQuote(MUKHTASAR, 'هو الله المنفرد بالألوهية')).toBe(true);
   });
 
+  it('ignores manuscript variant notes inside the source', () => {
+    const withVariant = 'وإنعامه عليهم بالنعم ¬في (ب): «النعم».¥ العظيمة، التي لو فقدوها لم يمكن لهم البقاء';
+    expect(containsQuote(withVariant, 'وإنعامه عليهم بالنعم العظيمة')).toBe(true);
+  });
+
   it('rejects paraphrases and quotes too short to prove anything', () => {
     expect(containsQuote(SAADI, 'المقصود في كل الحاجات')).toBe(false);
     expect(containsQuote(SAADI, 'الصمد')).toBe(false);
